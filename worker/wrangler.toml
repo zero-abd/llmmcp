@@ -12,3 +12,4 @@ id = "5d62d4bb05b14a8aa33769e57a4138f9"
 # PINECONE_HOST   — set via: wrangler secret put PINECONE_HOST
 [vars]
 ENVIRONMENT = "production"
+# LLMMCP_API_SECRET — set via: wrangler secret put LLMMCP_API_SECRET

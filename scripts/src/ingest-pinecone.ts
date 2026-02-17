@@ -355,8 +355,22 @@ async function main() {
 
   if (DEBUG_MODE) {
     console.log(`\n🐛 Debug files saved to: ${DEBUG_DIR}/`);
+      console.log(`\n🐛 Debug files saved to: ${DEBUG_DIR}/`);
   }
 }
+
+/*
+ * ── 4. Trigger Worker Refresh ───────────────────────
+ * Tell the Worker to query Pinecone and cache the latest model lists.
+ */
+if (process.env.LLMMCP_API_URL && process.env.LLMMCP_API_SECRET) {
+  console.log("\nTriggering Worker cache refresh...");
+  await triggerRefresh(process.env.LLMMCP_API_URL, process.env.LLMMCP_API_SECRET);
+} else {
+  console.log("\nSkipping Worker refresh (LLMMCP_API_URL or LLMMCP_API_SECRET not set)");
+}
+
+console.log("\nDone!");
 
 
 async function deleteAll() {
@@ -523,6 +537,22 @@ function extractTitle(content: string, url: string): string {
   return segments.length > 0
     ? segments[segments.length - 1].replace(/-/g, " ")
     : "Documentation";
+}
+
+async function triggerRefresh(apiUrl: string, apiKey: string) {
+  try {
+    const res = await fetch(`${apiUrl}/refresh-models`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!res.ok) {
+      console.warn(`Worker refresh failed: ${res.status} ${await res.text()}`);
+    } else {
+      console.log("Worker cache refreshed successfully.");
+    }
+  } catch (err) {
+    console.warn("Error triggering Worker refresh:", err);
+  }
 }
 
 // ── Run ────────────────────────────────────────────────
