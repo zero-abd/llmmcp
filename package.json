@@ -1,0 +1,22 @@
+{
+  "name": "llmmcp",
+  "private": true,
+  "version": "0.1.0",
+  "description": "llmmcp.net — Real-time LLM API documentation via MCP to fix version hallucinations",
+  "workspaces": [
+    "worker",
+    "cli",
+    "web",
+    "scripts"
+  ],
+  "scripts": {
+    "dev:worker": "npm run dev --workspace=worker",
+    "dev:web": "npm run dev --workspace=web",
+    "deploy:worker": "npm run deploy --workspace=worker",
+    "build:web": "npm run build --workspace=web",
+    "ingest": "npm run ingest --workspace=scripts"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

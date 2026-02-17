@@ -1,0 +1,25 @@
+{
+  "name": "llmmcp",
+  "version": "1.0.0",
+  "description": "MCP server for real-time LLM API documentation — stop hallucinations",
+  "keywords": ["mcp", "llm", "documentation", "ai", "claude", "gemini", "openai"],
+  "license": "MIT",
+  "author": "llmmcp",
+  "type": "module",
+  "bin": {
+    "llmmcp": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  }
+}

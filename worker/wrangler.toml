@@ -1,0 +1,14 @@
+name = "llmmcp-api"
+main = "src/index.ts"
+compatibility_date = "2025-12-01"
+
+# ── KV namespace for caching (create via: wrangler kv namespace create CACHE) ──
+[[kv_namespaces]]
+binding = "CACHE"
+id = "5d62d4bb05b14a8aa33769e57a4138f9"
+
+# ── Environment variables ──
+# PINECONE_API_KEY — set via: wrangler secret put PINECONE_API_KEY
+# PINECONE_HOST   — set via: wrangler secret put PINECONE_HOST
+[vars]
+ENVIRONMENT = "production"

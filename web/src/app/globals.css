@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #09090b;
+  --fg: #fafafa;
+  --muted: #a1a1aa;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --card: #18181b;
+  --border: #27272a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

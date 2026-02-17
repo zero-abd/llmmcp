@@ -1,0 +1,31 @@
+name: Scrape & Ingest Docs
+
+on:
+  # Run every day at 6:00 UTC
+  schedule:
+    - cron: "0 6 * * *"
+
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: scripts
+
+      - name: Run doc scraper
+        run: npm run ingest
+        working-directory: scripts
+        env:
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          PINECONE_HOST: ${{ secrets.PINECONE_HOST }}
