@@ -29,3 +29,5 @@ jobs:
         env:
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           PINECONE_HOST: ${{ secrets.PINECONE_HOST }}
+          LLMMCP_API_KEY: ${{ secrets.LLMMCP_API_KEY }}
+          LLMMCP_API_URL: ${{ secrets.LLMMCP_API_URL }}

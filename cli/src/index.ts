@@ -90,21 +90,32 @@ server.tool(
     try {
       const providers = await fetchProviders(API_URL);
 
-      const text = providers
-        .map((p) => {
-          const models =
-            p.models.length > 0
-              ? p.models.join(", ")
-              : "_No models found — try `search_docs` for details_";
-          return `### ${p.name} (\`${p.key}\`)\nLatest models: ${models}\n_Source: ${p.source}_`;
+      // providers is now a simple map: { openai: "...", anthropic: "..." }
+      // We'll format it as a markdown list of sections.
+
+      if (Object.keys(providers).length === 0) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: "No providers found. The service may be initializing.",
+            },
+          ],
+        };
+      }
+
+      const sections = Object.entries(providers)
+        .map(([provider, content]) => {
+          const name = provider.charAt(0).toUpperCase() + provider.slice(1);
+          return `### ${name} Models\n\n${content}\n`;
         })
-        .join("\n\n");
+        .join("\n---\n\n");
 
       return {
         content: [
           {
             type: "text" as const,
-            text: text || "No providers found. The service may be initializing.",
+            text: sections || "No models data available.",
           },
         ],
       };

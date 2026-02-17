@@ -9,6 +9,7 @@ type Bindings = {
   PINECONE_HOST: string; // e.g. https://llmmcp-j4jywpd.svc.aped-4627-b74a.pinecone.io
   CACHE: KVNamespace;
   ENVIRONMENT: string;
+  LLMMCP_API_KEY: string;
 };
 
 type QueryRequest = {
@@ -61,6 +62,8 @@ async function searchPinecone(
 
   if (!response.ok) {
     const errText = await response.text();
+    console.error(`Pinecone URL: ${host}/records/namespaces/docs/search`);
+    console.error(`Pinecone Error Body: ${errText}`);
     throw new Error(`Pinecone search failed (${response.status}): ${errText}`);
   }
 
@@ -164,118 +167,67 @@ app.post("/query", async (c) => {
   return c.json({ results, cached: false });
 });
 
-// ── GET /providers — dynamic provider + model discovery ──
-
-interface ProviderInfo {
-  name: string;
-  key: string;
-  models: string[];
-  source: string;
-}
-
-const PROVIDER_QUERIES: { name: string; key: string; filter: string; query: string }[] = [
-  { name: "OpenAI", key: "openai", filter: "openai", query: "latest available models GPT" },
-  { name: "Anthropic", key: "anthropic", filter: "anthropic", query: "latest available models Claude" },
-  { name: "Google Gemini", key: "gemini", filter: "google", query: "latest available models Gemini" },
-];
+// ── GET /providers — fast KV lookup ────────────────────
 
 app.get("/providers", async (c) => {
-  // ── 1. Check KV cache ──
-  const cacheKey = "providers:dynamic:v1";
-  const cached = await c.env.CACHE.get(cacheKey, "json");
+  const cached = await c.env.CACHE.get("models:all", "json");
   if (cached) {
-    return c.json({ providers: cached, cached: true });
+    return c.json({ providers: cached });
   }
 
-  // ── 2. Query Pinecone for each provider's model info ──
-  const providers: ProviderInfo[] = [];
+  // Fallback text if cache is empty
+  return c.json({
+    providers: {
+      openai: "No model data cached. Please run ingestion.",
+      anthropic: "No model data cached. Please run ingestion.",
+      google: "No model data cached. Please run ingestion.",
+    },
+  });
+});
 
-  for (const pq of PROVIDER_QUERIES) {
+// ── POST /refresh-models — update cache from Pinecone ──
+
+app.post("/refresh-models", async (c) => {
+  // 1. Auth check
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader || authHeader !== `Bearer ${c.env.LLMMCP_API_KEY}`) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const providers = [
+    { key: "openai", query: "latest available models GPT" },
+    { key: "anthropic", query: "latest available models Claude" },
+    { key: "google", query: "latest available models Gemini" },
+  ];
+
+  const result: Record<string, string> = {};
+
+  for (const p of providers) {
     try {
+      // Fetch top 1 chunk for "latest models"
       const hits = await searchPinecone(
         c.env.PINECONE_HOST,
         c.env.PINECONE_API_KEY,
-        pq.query,
-        3,
-        { provider: { $eq: pq.filter } }
+        p.query,
+        1,
+        { provider: { $eq: p.key } }
       );
 
-      // Extract model names from content using patterns
-      const models = extractModelNames(hits, pq.key);
-
-      providers.push({
-        name: pq.name,
-        key: pq.key,
-        models,
-        source: hits.length > 0 ? hits[0].metadata.source : "unknown",
-      });
-    } catch (err) {
-      // If search fails for one provider, still return others
-      providers.push({
-        name: pq.name,
-        key: pq.key,
-        models: [],
-        source: "error",
-      });
+      result[p.key] =
+        hits.length > 0 ? hits[0].content : "_No models found in documentation_";
+    } catch (e) {
+      console.error(`Failed to refresh ${p.key}:`, e);
+      result[p.key] = `_Error: ${e instanceof Error ? e.message : String(e)}_`;
     }
   }
 
-  // ── 3. Cache for 1 hour ──
-  try {
-    await c.env.CACHE.put(cacheKey, JSON.stringify(providers), {
-      expirationTtl: 3600,
-    });
-  } catch {
-    // Non-critical
-  }
+  // Save to KV (long TTL, we refresh on ingestion)
+  await c.env.CACHE.put("models:all", JSON.stringify(result));
 
-  return c.json({ providers, cached: false });
+  return c.json({ success: true, cached: result });
 });
 
-// ── Model name extraction ──────────────────────────────
 
-function extractModelNames(hits: DocChunk[], providerKey: string): string[] {
-  const allContent = hits.map((h) => h.content).join("\n");
-  const modelSet = new Set<string>();
-
-  // Provider-specific patterns
-  const patterns: Record<string, RegExp[]> = {
-    openai: [
-      /\b(gpt-5(?:-mini|-nano)?(?:-\d{4}-\d{2}-\d{2})?)\b/gi,
-      /\b(gpt-4\.1(?:-mini|-nano)?(?:-\d{4}-\d{2}-\d{2})?)\b/gi,
-      /\b(gpt-4o(?:-mini)?(?:-\d{4}-\d{2}-\d{2})?)\b/gi,
-      /\b(o[1-4](?:-mini|-pro)?(?:-deep-research)?(?:-\d{4}-\d{2}-\d{2})?)\b/gi,
-      /\b(codex-mini-latest)\b/gi,
-    ],
-    anthropic: [
-      /\b(claude\s+(?:opus|sonnet|haiku)\s+\d+(?:\.\d+)?)\b/gi,
-      /\b(claude-(?:opus|sonnet|haiku)-\d+(?:\.\d+)?(?:-\d+)?)\b/gi,
-      /\b(claude-\d+(?:\.\d+)?-(?:opus|sonnet|haiku)(?:-\d+)?)\b/gi,
-    ],
-    gemini: [
-      /\b(gemini-\d+(?:\.\d+)?-(?:pro|flash|flash-lite)(?:-preview|-image-preview)?)\b/gi,
-      /\bGemini\s+(\d+(?:\.\d+)?\s+(?:Pro|Flash|Flash-Lite|Deep Think))\b/gi,
-    ],
-  };
-
-  const providerPatterns = patterns[providerKey] ?? [];
-
-  for (const pattern of providerPatterns) {
-    const matches = allContent.matchAll(pattern);
-    for (const m of matches) {
-      // Normalize: lowercase, trim trailing date snapshots for dedup
-      let name = m[0].trim();
-      // Skip dated snapshots — only keep base model names
-      if (/\d{4}-\d{2}-\d{2}/.test(name)) continue;
-      // Skip batch variants
-      if (/\(batch\)/i.test(name)) continue;
-      modelSet.add(name);
-    }
-  }
-
-  // Sort and return top unique models (max 8)
-  return [...modelSet].slice(0, 8);
-}
 
 
 // ── Utilities ──────────────────────────────────────────

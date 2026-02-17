@@ -13,11 +13,8 @@ export interface DocResult {
   score: number;
 }
 
-export interface ProviderInfo {
-  name: string;
-  key: string;
-  models: string[];
-  source: string;
+export interface ProvidersMap {
+  [key: string]: string;
 }
 
 interface QueryParams {
@@ -32,8 +29,8 @@ interface QueryResponse {
 }
 
 interface ProvidersResponse {
-  providers: ProviderInfo[];
-  cached: boolean;
+  providers: ProvidersMap;
+  cached?: boolean;
 }
 
 export async function queryDocs(
@@ -68,7 +65,7 @@ export async function queryDocs(
 
 export async function fetchProviders(
   apiUrl: string
-): Promise<ProviderInfo[]> {
+): Promise<ProvidersMap> {
   const url = `${apiUrl}/providers`;
 
   const response = await fetch(url, {
