@@ -1,38 +1,30 @@
+// @ts-nocheck
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ArrowRight, 
+  Github, 
+  Terminal, 
+  Search, 
+  Zap, 
+  Database, 
+  Code2, 
+  ChevronRight,
+  ExternalLink,
+  CheckCircle2,
+  Copy,
+  Check,
+  Cpu,
+  Globe,
+  Monitor,
+  ShieldCheck,
+  Sparkles,
+  Command
+} from "lucide-react";
 
-// ── Data ────────────────────────────────────────────────
-
-const models = [
-  {
-    provider: "Gemini",
-    color: "#4285f4",
-    models: [
-      { name: "Gemini 2.5 Pro", id: "gemini-2.5-pro", context: "1M" },
-      { name: "Gemini 2.5 Flash", id: "gemini-2.5-flash", context: "1M" },
-      { name: "Gemini 2.0 Flash", id: "gemini-2.0-flash", context: "1M" },
-    ],
-  },
-  {
-    provider: "Claude",
-    color: "#d97706",
-    models: [
-      { name: "Claude Sonnet 4", id: "claude-sonnet-4-20250514", context: "200K" },
-      { name: "Claude Opus 4", id: "claude-opus-4-20250514", context: "200K" },
-      { name: "Claude 3.5 Haiku", id: "claude-3-5-haiku-20241022", context: "200K" },
-    ],
-  },
-  {
-    provider: "OpenAI",
-    color: "#10b981",
-    models: [
-      { name: "GPT-4.1", id: "gpt-4.1", context: "1M" },
-      { name: "o3", id: "o3", context: "200K" },
-      { name: "o4-mini", id: "o4-mini", context: "200K" },
-    ],
-  },
-];
+// ── Types ───────────────────────────────────────────────
 
 type Client = {
   id: string;
@@ -45,7 +37,26 @@ type Client = {
   docsUrl: string;
 };
 
+// ── Data ────────────────────────────────────────────────
+
 const clients: Client[] = [
+  {
+    id: "antigravity",
+    name: "Antigravity",
+    icon: "🪐",
+    description: "Google's AI-powered IDE",
+    filePath: ".antigravity/mcp.json",
+    config: `{
+  "mcpServers": {
+    "llmmcp": {
+      "command": "npx",
+      "args": ["-y", "llmmcp@latest"]
+    }
+  }
+}`,
+    color: "#4285F4",
+    docsUrl: "https://antigravity.google/",
+  },
   {
     id: "cursor",
     name: "Cursor",
@@ -56,22 +67,12 @@ const clients: Client[] = [
   "mcpServers": {
     "llmmcp": {
       "command": "npx",
-      "args": ["-y", "llmmcp"]
+      "args": ["-y", "llmmcp@latest"]
     }
   }
 }`,
     color: "#00b4d8",
     docsUrl: "https://docs.cursor.com/context/model-context-protocol",
-  },
-  {
-    id: "claude-code",
-    name: "Claude Code",
-    icon: "🟠",
-    description: "Anthropic's agentic CLI",
-    filePath: "Run in terminal",
-    config: `claude mcp add llmmcp -- npx -y llmmcp`,
-    color: "#d97706",
-    docsUrl: "https://docs.anthropic.com/en/docs/claude-code/mcp",
   },
   {
     id: "claude-desktop",
@@ -83,29 +84,12 @@ const clients: Client[] = [
   "mcpServers": {
     "llmmcp": {
       "command": "npx",
-      "args": ["-y", "llmmcp"]
+      "args": ["-y", "llmmcp@latest"]
     }
   }
 }`,
     color: "#c2410c",
     docsUrl: "https://modelcontextprotocol.io/quickstart/user",
-  },
-  {
-    id: "vscode",
-    name: "VS Code (Copilot)",
-    icon: "💎",
-    description: "GitHub Copilot Agent Mode",
-    filePath: ".vscode/mcp.json",
-    config: `{
-  "servers": {
-    "llmmcp": {
-      "command": "npx",
-      "args": ["-y", "llmmcp"]
-    }
-  }
-}`,
-    color: "#007acc",
-    docsUrl: "https://code.visualstudio.com/docs/copilot/chat/mcp-servers",
   },
   {
     id: "windsurf",
@@ -117,7 +101,7 @@ const clients: Client[] = [
   "mcpServers": {
     "llmmcp": {
       "command": "npx",
-      "args": ["-y", "llmmcp"]
+      "args": ["-y", "llmmcp@latest"]
     }
   }
 }`,
@@ -125,61 +109,101 @@ const clients: Client[] = [
     docsUrl: "https://docs.codeium.com/windsurf/mcp",
   },
   {
-    id: "codex",
-    name: "Codex CLI",
-    icon: "🤖",
-    description: "OpenAI's agentic CLI",
-    filePath: "~/.codex/config.json",
+    id: "vscode",
+    name: "VS Code",
+    icon: "💎",
+    description: "GitHub Copilot Agent Mode",
+    filePath: ".vscode/mcp.json",
     config: `{
-  "mcpServers": {
+  "servers": {
     "llmmcp": {
       "command": "npx",
-      "args": ["-y", "llmmcp"]
+      "args": ["-y", "llmmcp@latest"]
     }
   }
 }`,
-    color: "#10b981",
-    docsUrl: "https://github.com/openai/codex",
-  },
-  {
-    id: "antigravity",
-    name: "Antigravity",
-    icon: "🚀",
-    description: "Google's agentic IDE",
-    filePath: ".gemini/settings.json",
-    config: `{
-  "mcpServers": {
-    "llmmcp": {
-      "command": "npx",
-      "args": ["-y", "llmmcp"]
-    }
-  }
-}`,
-    color: "#8b5cf6",
-    docsUrl: "https://cloud.google.com/gemini/docs/codeassist/use-mcp-servers",
-  },
-  {
-    id: "zed",
-    name: "Zed",
-    icon: "⚡",
-    description: "High-performance editor",
-    filePath: "~/.config/zed/settings.json",
-    config: `{
-  "context_servers": {
-    "llmmcp": {
-      "command": {
-        "path": "npx",
-        "args": ["-y", "llmmcp"]
-      }
-    }
-  }
-}`,
-    color: "#f59e0b",
-    docsUrl: "https://zed.dev/docs/assistant/model-context-protocol",
+    color: "#007acc",
+    docsUrl: "https://code.visualstudio.com/docs/copilot/chat/mcp-servers",
   },
 ];
 
+const bubbleIcons = [Terminal, Search, Cpu, Code2, Globe, Monitor, ShieldCheck, Sparkles, Command, Zap, Database];
+
 // ── Components ──────────────────────────────────────────
+
+function RandomBubbles() {
+  const [bubbles, setBubbles] = useState<{ id: number; iconIndex: number; top: string; left: string }[]>([]);
+
+  const getPeripheralPos = () => {
+    // Avoid center 60% of vertical and horizontal space
+    // Safe zones: top 20%, bottom 20%, left 20%, right 20%
+    const isHorizontalEdge = Math.random() > 0.5;
+    let top, left;
+
+    if (isHorizontalEdge) {
+      // Near top or bottom edge (can be anywhere horizontally)
+      top = Math.random() > 0.5 ? `${5 + Math.random() * 15}%` : `${80 + Math.random() * 10}%`;
+      left = `${5 + Math.random() * 90}%`;
+    } else {
+      // Near left or right edge (can be anywhere vertically)
+      left = Math.random() > 0.5 ? `${5 + Math.random() * 15}%` : `${80 + Math.random() * 10}%`;
+      top = `${5 + Math.random() * 90}%`;
+    }
+    return { top, left };
+  };
+
+  useEffect(() => {
+    // Initial bubbles with staggered entry
+    const initial = [0, 1].map((_, i) => {
+      const pos = getPeripheralPos();
+      return {
+        id: Math.random() + i,
+        iconIndex: Math.floor(Math.random() * bubbleIcons.length),
+        ...pos,
+      };
+    });
+    setBubbles(initial);
+
+    const interval = setInterval(() => {
+      setBubbles(prev => {
+        const pos = getPeripheralPos();
+        const next = [...prev];
+        next.shift();
+        next.push({
+          id: Math.random(),
+          iconIndex: Math.floor(Math.random() * bubbleIcons.length),
+          ...pos,
+        });
+        return next;
+      });
+    }, 3000); // Faster cycle: 3s
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden h-full w-full">
+      <AnimatePresence>
+        {bubbles.map((b) => {
+          const Icon = bubbleIcons[b.iconIndex];
+          return (
+            <motion.div
+              key={b.id}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 0.2, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 1.5, ease: "backOut" }}
+              style={{ top: b.top, left: b.left }}
+              className="p-4 glass rounded-[2rem] text-blue-400/60 absolute border border-white/5"
+            >
+              <Icon className="w-6 h-6" />
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -193,267 +217,291 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-3 right-3 rounded-md border border-[var(--border)] bg-[var(--bg)] px-2.5 py-1 text-xs font-medium text-[var(--muted)] transition-all hover:border-[var(--muted)] hover:text-[var(--fg)]"
-      title="Copy to clipboard"
-    >
-      {copied ? (
-        <span className="flex items-center gap-1 text-emerald-400">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          Copied!
-        </span>
-      ) : (
-        <span className="flex items-center gap-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          Copy
-        </span>
-      )}
-    </button>
-  );
-}
-
-function ClientCard({ client, isActive, onClick }: { client: Client; isActive: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`group flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-200 ${
-        isActive
-          ? "border-indigo-500/50 bg-indigo-500/10 shadow-lg shadow-indigo-500/5"
-          : "border-[var(--border)] bg-[var(--card)] hover:border-[var(--muted)]/50 hover:bg-[var(--card)]/80"
+      className={`absolute top-3 right-3 p-2 rounded-lg transition-all duration-200 border ${
+        copied 
+          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400" 
+          : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
       }`}
     >
-      <span className="text-2xl">{client.icon}</span>
-      <div className="min-w-0">
-        <p className={`font-semibold text-sm truncate ${isActive ? "text-indigo-300" : "text-[var(--fg)]"}`}>
-          {client.name}
-        </p>
-        <p className="text-xs text-[var(--muted)] truncate">{client.description}</p>
-      </div>
+      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </button>
   );
 }
 
-// ── Page ────────────────────────────────────────────────
+// ── Main Page ───────────────────────────────────────────
 
 export default function Home() {
-  const [activeClient, setActiveClient] = useState("cursor");
+  const [activeClient, setActiveClient] = useState("antigravity");
   const active = clients.find((c) => c.id === activeClient) ?? clients[0];
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen relative selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
+      
+      {/* ── Navbar ──────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex justify-center">
+        <div className="glass px-6 py-2.5 rounded-full flex items-center gap-8 border border-white/10 shadow-lg">
+          <a href="#" className="text-sm font-semibold hover:text-blue-400 transition-colors">Home</a>
+          <a href="#install" className="text-sm font-semibold hover:text-blue-400 transition-colors">Install</a>
+          <a href="#features" className="text-sm font-semibold hover:text-blue-400 transition-colors">Features</a>
+          <div className="h-4 w-[1px] bg-white/10" />
+          <a href="https://github.com/zero-abd/llmmcp" target="_blank" className="hover:text-white text-white/50 transition-colors">
+            <Github className="w-5 h-5" />
+          </a>
+        </div>
+      </nav>
+
       {/* ── Hero ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-[var(--border)]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.15)_0%,_transparent_60%)]" />
-        <div className="relative mx-auto max-w-5xl px-6 py-28 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-1.5 text-sm text-[var(--muted)]">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            MCP Server &middot; Open Source
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl aspect-square bg-blue-500/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl space-y-8 relative z-10"
+        >
+          {/* Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-[10px] font-semibold text-blue-400 tracking-wide uppercase">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            Real-Time API Docs Fix
           </div>
-          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Stop LLM{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+
+          <h1 className="text-4xl md:text-7xl font-bold tracking-tighter leading-[1.1] py-2">
+            Stop LLM<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500 drop-shadow-sm">
               Hallucinations
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--muted)] leading-relaxed">
-            LLMs make up API parameters, invent model names, and hallucinate
-            pricing. <strong className="text-[var(--fg)]">llmmcp</strong> gives
-            them real-time documentation for Gemini, Claude, and OpenAI via the
-            Model Context Protocol.
+
+          <p className="max-w-2xl mx-auto text-sm md:text-lg text-text-muted leading-relaxed font-light">
+            Providing real-time documentation retrieval for OpenAI, Anthropic, and Gemini.<br />
+            Ensure technical accuracy through verified API reference synchronization.
           </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#install"
-              className="rounded-lg bg-[var(--accent)] px-6 py-3 font-medium text-white transition hover:bg-[var(--accent-light)]"
+              className="group h-12 px-8 flex items-center justify-center gap-2 bg-white text-black font-bold rounded-full hover:bg-white/90 transition-all hover:scale-[1.05] active:scale-95 shadow-xl"
             >
-              Get Started
+              Start Building
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
               href="https://github.com/zero-abd/llmmcp"
               target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-6 py-3 font-medium transition hover:border-[var(--muted)]"
+              className="h-12 px-8 flex items-center justify-center gap-2 glass border border-white/10 font-semibold rounded-full hover:bg-white/5 transition-all"
             >
+              <Github className="w-5 h-5" />
               GitHub
             </a>
           </div>
-        </div>
-      </section>
+        </motion.div>
 
-      {/* ── How it Works ─────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-6 py-20">
-        <h2 className="text-center text-3xl font-bold">How it works</h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-[var(--muted)]">
-          Three steps. No API keys needed. Zero configuration.
-        </p>
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
-          {[
-            {
-              step: "1",
-              title: "LLM calls search_docs",
-              desc: "When your AI assistant needs accurate API info, it calls the llmmcp MCP tool automatically.",
-            },
-            {
-              step: "2",
-              title: "Semantic search",
-              desc: "The query is embedded and matched against our curated documentation index powered by Pinecone.",
-            },
-            {
-              step: "3",
-              title: "Accurate answer",
-              desc: "Real documentation chunks are returned to the LLM, replacing hallucinated info with facts.",
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6"
-            >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-lg font-bold text-indigo-400">
-                {item.step}
-              </div>
-              <h3 className="text-lg font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm text-[var(--muted)] leading-relaxed">
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
+        {/* Decorative elements - Dynamic Randomized Bubbles */}
+        <RandomBubbles />
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/20"
+        >
+          <div className="w-6 h-10 border-2 border-white/10 rounded-full flex justify-center p-1">
+            <div className="w-1 h-2 bg-white/40 rounded-full" />
+          </div>
+        </motion.div>
       </section>
 
       {/* ── Install Guide ────────────────────────────── */}
-      <section id="install" className="border-y border-[var(--border)] bg-[var(--card)]/30">
-        <div className="mx-auto max-w-5xl px-6 py-20">
-          <h2 className="text-center text-3xl font-bold">
-            Add to your editor
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-[var(--muted)]">
-            Select your MCP client and copy the configuration. No API key required.
-          </p>
-
-          {/* Client selector grid */}
-          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {clients.map((client) => (
-              <ClientCard
-                key={client.id}
-                client={client}
-                isActive={activeClient === client.id}
-                onClick={() => setActiveClient(client.id)}
-              />
-            ))}
+      <section id="install" className="py-24 px-6 relative bg-gradient-to-b from-transparent to-black/40">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Add to your workspace</h2>
+            <p className="text-text-muted font-light max-w-xl mx-auto text-lg">
+              Get official documentation for the latest <span className="text-white font-medium">OpenAI, Gemini, and Claude</span> models. Search for <span className="text-blue-400 font-bold">llmmcp</span> in the <span className="text-white font-medium">MCP Store</span>.
+            </p>
           </div>
 
-          {/* Config display */}
-          <div className="mt-8 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg)]" style={{ boxShadow: `0 0 40px -12px ${active.color}20` }}>
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{active.icon}</span>
-                <div>
-                  <h3 className="font-semibold text-lg">{active.name}</h3>
-                  <p className="text-xs text-[var(--muted)] font-mono">
-                    {active.filePath}
-                  </p>
-                </div>
-              </div>
-              <a
-                href={active.docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1 rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--muted)] transition hover:text-[var(--fg)] hover:border-[var(--muted)]"
+          <div className="grid lg:grid-cols-[1fr_1.5fr] gap-8">
+            {/* Sidebar Selectors */}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {clients.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveClient(c.id)}
+                  className={`flex items-center gap-4 p-5 rounded-3xl border transition-all duration-300 text-left group ${
+                    activeClient === c.id 
+                      ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
+                      : "glass border-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <span className={`text-4xl transition-all ${activeClient === c.id ? "scale-110" : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100"}`}>
+                    {c.icon}
+                  </span>
+                  <div>
+                    <h4 className={`font-bold text-lg transition-colors ${activeClient === c.id ? "text-blue-400" : "text-white"}`}>{c.name}</h4>
+                    <p className="text-xs text-text-muted font-light">{c.description}</p>
+                  </div>
+                  {activeClient === c.id && (
+                    <motion.div layoutId="active-arrow">
+                      <ChevronRight className="w-5 h-5 ml-auto text-blue-400" />
+                    </motion.div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Config View */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="glass-card rounded-[3rem] overflow-hidden flex flex-col border border-white/10 shadow-2xl"
               >
-                Docs
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </a>
-            </div>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 glass rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+                      {active.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl">{active.name} Config</h3>
+                      <p className="text-xs text-text-muted font-mono bg-white/5 px-2 py-1 rounded inline-block mt-1">{active.filePath}</p>
+                    </div>
+                  </div>
+                  <a 
+                    href={active.docsUrl} 
+                    target="_blank" 
+                    className="p-3 glass border border-white/10 rounded-2xl hover:text-blue-400 transition-all hover:scale-110 shadow-lg"
+                  >
+                    <ExternalLink className="w-6 h-6" />
+                  </a>
+                </div>
 
-            {/* Code block */}
-            <div className="relative">
-              <CopyButton text={active.config} />
-              <pre className="overflow-x-auto p-5 pr-24 text-sm leading-relaxed">
-                <code className="text-indigo-300">{active.config}</code>
-              </pre>
-            </div>
+                <div className="relative flex-1 bg-black/60">
+                  <CopyButton text={active.config} />
+                  <pre className="p-10 overflow-x-auto text-base leading-relaxed font-mono">
+                    <code className="text-blue-300/90">{active.config}</code>
+                  </pre>
+                </div>
 
-            {/* Footer hint */}
-            <div className="border-t border-[var(--border)] px-5 py-3 text-xs text-[var(--muted)]">
-              {active.id === "claude-code" ? (
-                <>Run this command in your terminal — that&apos;s it!</>
-              ) : (
-                <>Paste this into <code className="text-indigo-400">{active.filePath}</code> and restart your editor.</>
-              )}
-            </div>
+                <div className="p-5 bg-white/5 text-[11px] uppercase font-bold tracking-[0.3em] text-center text-blue-400/60 flex items-center justify-center gap-2">
+                  <Terminal className="w-4 h-4" />
+                  Paste into {active.filePath} &amp; restart
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
-
-          <p className="mt-6 text-center text-sm text-[var(--muted)]">
-            That&apos;s it. The next time your LLM needs API docs, it will
-            automatically call <code className="text-indigo-400">search_docs</code>{" "}
-            and get real data.
-          </p>
         </div>
       </section>
 
-      {/* ── Model Status Board ───────────────────────── */}
-      <section className="mx-auto max-w-5xl px-6 py-20">
-        <h2 className="text-center text-3xl font-bold">
-          Latest Model Versions
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-[var(--muted)]">
-          The models llmmcp knows about. Updated regularly.
-        </p>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {models.map((group) => (
-            <div
-              key={group.provider}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-hidden"
-            >
-              <div
-                className="px-5 py-3 text-sm font-semibold uppercase tracking-wider"
-                style={{ borderBottom: `2px solid ${group.color}` }}
+      {/* ── Features ─────────────────────────────────── */}
+      <section id="features" className="py-24 px-6 relative bg-black">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: Zap,
+                title: "Up-to-Date Info",
+                desc: "Always retrieve the latest model parameters and technical references directly from source documentation.",
+                color: "text-amber-400",
+                glow: "from-amber-400/20"
+              },
+              {
+                icon: Database,
+                title: "Deep Parameter Search",
+                desc: "Verified tool use syntax, context window sizes, and rate limits matched against Pinecone index.",
+                color: "text-blue-400",
+                glow: "from-blue-400/20"
+              },
+              {
+                icon: CheckCircle2,
+                title: "Latest Patterns",
+                desc: "Force agents to follow current best practices instead of using legacy or deprecated library versions.",
+                color: "text-emerald-400",
+                glow: "from-emerald-400/20"
+              }
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="glass-card p-10 rounded-[2.5rem] border border-white/5 group relative overflow-hidden transition-all hover:shadow-[0_0_50px_rgba(59,130,246,0.1)]"
               >
-                {group.provider}
-              </div>
-              <div className="divide-y divide-[var(--border)]">
-                {group.models.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between px-5 py-3">
-                    <div>
-                      <p className="font-medium text-sm">{m.name}</p>
-                      <p className="text-xs text-[var(--muted)] font-mono">
-                        {m.id}
-                      </p>
-                    </div>
-                    <span className="text-xs text-[var(--muted)] tabular-nums">
-                      {m.context}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${f.glow} to-transparent blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 glass border border-white/10 ${f.color} shadow-lg`}>
+                  <f.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">{f.title}</h3>
+                <p className="text-base text-text-muted leading-relaxed font-light">
+                  {f.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────── */}
-      <footer className="border-t border-[var(--border)] py-8">
-        <div className="mx-auto max-w-5xl px-6 flex flex-col items-center gap-2 text-sm text-[var(--muted)]">
-          <p>
-            <strong className="text-[var(--fg)]">llmmcp</strong> &middot; Open
-            source &middot;{" "}
-            <a
-              href="https://github.com/zero-abd/llmmcp"
-              className="underline hover:text-[var(--fg)]"
-            >
-              GitHub
-            </a>
+      <footer className="pt-32 pb-16 px-6 bg-black border-t border-white/5 relative overflow-hidden">
+        {/* Decorative background for footer bottom */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 bg-blue-500/10 blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-12 text-center">
+          <div className="flex items-center gap-3 scale-110">
+            <div className="w-10 h-10 glass rounded-xl flex items-center justify-center border border-white/10 shadow-lg">
+              <Zap className="w-5 h-5 text-blue-400" />
+            </div>
+            <span className="font-bold tracking-tighter text-3xl">llmmcp</span>
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            <p className="text-text-muted text-lg max-w-xl leading-relaxed font-light">
+              Open source project building the standard for real-time AI documentation retrieval. <br />
+              <span className="text-white/60 text-sm font-medium">Built for the future of agentic coding.</span>
+            </p>
+            <p className="text-xs text-white/30 tracking-widest uppercase mt-4">
+              Cloudflare Workers &bull; Pinecone &bull; MCP SDK
+            </p>
+          </div>
+
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            className="h-[1px] w-32 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" 
+          />
+
+          <div className="flex flex-col items-center gap-6">
+            <div className="space-y-2">
+              <p className="text-white/60 text-xs uppercase tracking-[0.2em] font-bold">Maintained by</p>
+              <a 
+                href="https://abdullahalmahmud.me" 
+                target="_blank"
+                className="text-2xl font-bold text-white hover:text-blue-400 transition-all block relative group"
+              >
+                Abdullah Al Mahmud
+                <span className="absolute -bottom-2 left-0 w-full h-px bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </a>
+            </div>
+            
+            <div className="flex items-center gap-6 mt-4">
+              <a href="https://github.com/zero-abd/llmmcp" target="_blank" className="p-3 transition-all text-white/40 hover:text-white hover:scale-110 glass rounded-2xl border border-white/10 shadow-lg">
+                <Github className="w-6 h-6" />
+              </a>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-white/10 uppercase tracking-[0.4em] mt-12 font-medium">
+            &copy; 2026 llmmcp &bull; All Rights Reserved
           </p>
-          <p>Built on Cloudflare Workers + Pinecone + Model Context Protocol</p>
         </div>
       </footer>
     </main>

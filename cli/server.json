@@ -1,0 +1,24 @@
+{
+  "mcpName": "llmmcp",
+  "version": "1.1.0",
+  "description": "MCP server for real-time LLM API documentation — stop hallucinations",
+  "source": {
+    "type": "npm",
+    "package": "llmmcp"
+  },
+  "homepage": "https://llmmcp.net",
+  "repository": "https://github.com/zero-abd/llmmcp",
+  "author": "Abdullah Al Mahmud",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "llm",
+    "documentation",
+    "ai",
+    "claude",
+    "gemini",
+    "openai",
+    "hallucination-fix"
+  ]
+}

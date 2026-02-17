@@ -68,5 +68,9 @@ This project is open-source. If you'd like to run your own instance of the backe
 
 ---
 
+---
+
+Developed by [Abdullah Al Mahmud](https://abdullahalmahmud.me)
+
 ## License
 MIT

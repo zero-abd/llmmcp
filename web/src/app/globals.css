@@ -1,18 +1,133 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #09090b;
-  --fg: #fafafa;
-  --muted: #a1a1aa;
-  --accent: #6366f1;
-  --accent-light: #818cf8;
-  --card: #18181b;
-  --border: #27272a;
+  /* Dark Theme Palette (Magna-BD inspired) */
+  --background: #000000;
+  --foreground: #ffffff;
+  --muted: #0f172a;
+
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+
+  --accent: #3b82f6;
+  --accent-glow: #1e3a8a;
+
+  --border: #1e293b;
+  --text-muted: #94a3b8;
 }
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-border: var(--border);
+  --color-text-muted: var(--text-muted);
+
+  --radius-pill: 9999px;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
+html,
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: #000000;
+  color: var(--foreground);
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Grid Pattern Background - Attached to body ::before */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(30, 41, 59, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.4) 1px, transparent 1px);
+  background-size: 64px 64px;
+  /* Smoother mask: radial for top/center, linear for bottom fade */
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 95%), 
+                      radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 95%),
+              radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Radial Glow Effect - Above Grid */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59, 130, 246, 0.15), transparent 60%);
+}
+
+/* Ensure main content is above pseudo-elements */
+main,
+header,
+footer,
+nav {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.6);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Selection */
+::selection {
+  background: rgba(59, 130, 246, 0.4);
+  color: #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }

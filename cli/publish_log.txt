@@ -1,0 +1,45 @@
+
+> llmmcp@1.1.1 prepublishOnly
+> npm run build
+
+
+> llmmcp@1.1.1 build
+> tsup src/index.ts --format esm --dts --clean
+
+[34mCLI[39m Building entry: src/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Target: es2022
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\index.js [22m[32m510.02 KB[39m
+[32mESM[39m ⚡️ Build success in 176ms
+[34mDTS[39m Build start
+[32mDTS[39m ⚡️ Build success in 2119ms
+[32mDTS[39m [1mdist\index.d.ts [22m[32m20.00 B[39m
+npm warn publish npm auto-corrected some errors in your package.json when publishing.  Please run "npm pkg fix" to address these errors.
+npm warn publish errors corrected:
+npm warn publish "bin[llmmcp]" script name was cleaned
+npm notice
+npm notice 📦  llmmcp@1.1.1
+npm notice Tarball Contents
+npm notice 20B dist/index.d.ts
+npm notice 522.3kB dist/index.js
+npm notice 977B package.json
+npm notice Tarball Details
+npm notice name: llmmcp
+npm notice version: 1.1.1
+npm notice filename: llmmcp-1.1.1.tgz
+npm notice package size: 77.7 kB
+npm notice unpacked size: 523.3 kB
+npm notice shasum: ca95914e3fb9d853c5e169d3b5723077a824da42
+npm notice integrity: sha512-tlvqJkAEMQcJe[...]5ipnTRCMJunmQ==
+npm notice total files: 3
+npm notice
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+npm error code EOTP
+npm error This operation requires a one-time password from your authenticator.
+npm error You can provide a one-time password by passing --otp=<code> to the command you ran.
+npm error If you already provided a one-time password then it is likely that you either typoed
+npm error it, or it timed out. Please try again.
+npm error A complete log of this run can be found in: C:\Users\Abdullah Al Mahmud\AppData\Local\npm-cache\_logs\2026-02-17T13_57_05_343Z-debug-0.log
