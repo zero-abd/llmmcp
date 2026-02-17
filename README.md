@@ -1,107 +1,72 @@
 # llmmcp
 
-Real-time LLM API documentation via MCP. Stop hallucinations about model names, pricing, and parameters.
+**Stop LLM hallucinations and outdated code patterns.**
 
-## Architecture
+`llmmcp` is a Model Context Protocol (MCP) server that provides real-time, up-to-date documentation for major LLM providers (OpenAI, Anthropic, and Google Gemini). It ensures your AI agents—like Cursor, Claude Desktop, or Windsurf—base their work on current official documentation instead of stale training data or deprecated library patterns.
 
-```
-┌─────────────┐     text query      ┌──────────────────┐
-│  MCP Client │ ──────────────────> │  Cloudflare       │
-│  (Cursor,   │                     │  Worker           │
-│   Claude    │ <────────────────── │  ┌─ Workers AI    │
-│   Desktop)  │     markdown chunks │  │  (embedding)   │
-│             │                     │  ├─ Vectorize     │
-│  ┌────────┐ │                     │  │  (vector DB)   │
-│  │ llmmcp │ │                     │  └─ KV            │
-│  │  CLI   │ │                     │     (cache)       │
-│  └────────┘ │                     └──────────────────┘
-└─────────────┘
-```
+## Why use llmmcp?
+LLMs frequently hallucinate about their own latest versions, feature availability (e.g., tool use in certain models), and pricing. `llmmcp` fixes this by providing:
+- ✅ **Up-to-Date Model Info**: Always know the latest available models (e.g., Gemini 2.0 Flash, Claude 3.5 Sonnet).
+- ✅ **Detailed API Params**: Verified tool use syntax, context window sizes, and rate limits.
+- ✅ **Latest Implementation Patterns**: Force your AI agent to follow current best practices instead of using legacy or deprecated library versions.
+- ✅ **Real-Time Search**: Queries an indexed vector database of official provider documentation.
+- ✅ **Dynamic Listings**: Get the current state of providers without hardcoded lists.
 
-- **CLI** (`/cli`): Thin MCP stdio server. Sends text queries, receives markdown. Local LRU cache.
-- **Worker** (`/worker`): Cloudflare Worker (Hono). Embeds queries via Workers AI, searches Vectorize, caches in KV.
-- **Web** (`/web`): Landing page. Model status board + install guide.
-- **Scripts** (`/scripts`): Automated doc scraper that fetches from OpenAI, Anthropic, and Google's public docs.
+---
 
-## Setup
+## 🚀 Quick Start
 
-### 1. Push to GitHub
-
-Create a private repo and push this project.
-
-### 2. Create Cloudflare account
-
-Sign up at [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) (free, no credit card).
-
-### 3. One-time Cloudflare resource setup
-
-```bash
-npm install -g wrangler
-wrangler login
-wrangler vectorize create llmmcp-docs --dimensions=768 --metric=cosine
-wrangler kv namespace create CACHE
-```
-
-Copy the KV namespace ID into `worker/wrangler.toml`.
-
-### 4. Deploy the landing page
-
-In Cloudflare dashboard: **Workers & Pages** > **Create** > **Pages** > **Connect to Git**
-
-| Field | Value |
-|---|---|
-| Root directory | `web` |
-| Build command | `npm install && npm run build` |
-| Deploy command | `npx wrangler deploy` |
-
-### 5. Deploy the Worker API
-
-In GitHub repo: **Settings** > **Secrets** > **Actions** > add these secrets:
-
-| Secret | Value |
-|---|---|
-| `CLOUDFLARE_API_TOKEN` | Create at Cloudflare > My Profile > API Tokens > "Edit Cloudflare Workers" template |
-| `LLMMCP_API_URL` | Your Worker URL after first deploy (e.g. `https://llmmcp-api.xxx.workers.dev`) |
-| `LLMMCP_API_SECRET` | Any strong random string for ingestion auth |
-
-Push to `main` — the GitHub Action auto-deploys the Worker.
-
-### 6. Docs auto-update
-
-A GitHub Action runs weekly to scrape the latest docs from OpenAI, Anthropic, and Google, then uploads them to Vectorize. You can also trigger it manually from the Actions tab.
-
-## MCP Client Configuration
+You can use `llmmcp` immediately in your favorite AI tools without local installation.
 
 ### Cursor
-
-Add to `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "llmmcp": {
-      "command": "npx",
-      "args": ["-y", "llmmcp"]
-    }
-  }
-}
-```
+Add a new MCP server in **Settings > Models > MCP Servers**:
+- **Name**: `llmmcp`
+- **Type**: `command`
+- **Command**: `npx -y llmmcp@latest`
 
 ### Claude Desktop
-
-Add to `claude_desktop_config.json`:
-
+Add the following to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "llmmcp": {
       "command": "npx",
-      "args": ["-y", "llmmcp"]
+      "args": ["-y", "llmmcp@latest"]
     }
   }
 }
 ```
 
-## License
+---
 
+## 🛠 Features
+
+### `search_docs`
+Search the latest official documentation for specific technical details. 
+*Example: "What are the tool use parameters for Gemini 1.5 Pro?"*
+
+### `list_providers`
+Get a dynamically updated list of available providers (OpenAI, Anthropic, Google) and their currently promoted models.
+
+---
+
+## 🏗 How it Works
+
+`llmmcp` is designed for speed and reliability:
+1.  **Indexer**: A weekly scraper fetches raw markdown/text from official documentation.
+2.  **Vector DB**: Chunks are embedded and stored in **Pinecone** with integrated embedding support.
+3.  **Backend**: A **Cloudflare Worker** handles query embedding and retrieval, caching frequent results in **Workers KV**.
+4.  **MCP Client**: A thin CLI translates MCP requests into API calls for the Worker.
+
+---
+
+## 🤝 Contributing & Self-Hosting
+
+This project is open-source. If you'd like to run your own instance of the backend:
+1.  See [Architecture & Deployment](docs/DEPLOYMENT.md) (coming soon, see current setup in logs).
+2.  Fork the repo and submit a PR for new documentation sources.
+
+---
+
+## License
 MIT

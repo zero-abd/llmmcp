@@ -3,6 +3,14 @@
   "version": "1.1.0",
   "description": "MCP server for real-time LLM API documentation — stop hallucinations",
   "keywords": ["mcp", "llm", "documentation", "ai", "claude", "gemini", "openai"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zero-abd/llmmcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zero-abd/llmmcp/issues"
+  },
+  "homepage": "https://llmmcp.net",
   "license": "MIT",
   "author": "llmmcp",
   "type": "module",
