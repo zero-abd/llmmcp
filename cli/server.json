@@ -1,13 +1,16 @@
 {
-  "mcpName": "llmmcp",
-  "version": "1.1.0",
+  "name": "io.github.zero-abd/llmmcp",
+  "version": "1.1.1",
   "description": "MCP server for real-time LLM API documentation — stop hallucinations",
   "source": {
     "type": "npm",
     "package": "llmmcp"
   },
   "homepage": "https://llmmcp.net",
-  "repository": "https://github.com/zero-abd/llmmcp",
+  "repository": {
+    "source": "github",
+    "url": "https://github.com/zero-abd/llmmcp"
+  },
   "author": "Abdullah Al Mahmud",
   "license": "MIT",
   "keywords": [

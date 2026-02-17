@@ -2,20 +2,37 @@ name: Publish to MCP Registry
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'cli/**'
+    branches: [main]
+    paths: ['cli/**']
   workflow_dispatch:
 
 jobs:
-  publish:
+  validate-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       
-      - name: Publish to MCP Registry
-        uses: modelcontextprotocol/mcp-publisher-action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          server-json-path: ./cli/server.json
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ./cli
+
+      - name: Build
+        run: npm run build
+        working-directory: ./cli
+
+      - name: Validate server.json
+        run: npx ajv-cli validate -s https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json -d cli/server.json --strict=false
+
+      - name: Publish to Registry
+        uses: modelcontextprotocol/publish-action@v1
+        with:
+          server-json: cli/server.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
