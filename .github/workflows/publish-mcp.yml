@@ -31,8 +31,15 @@ jobs:
       - name: Validate server.json
         run: npx ajv-cli validate -s https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json -d cli/server.json --strict=false
 
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" -o mcp-publisher.tar.gz
+          tar xf mcp-publisher.tar.gz mcp-publisher
+          chmod +x mcp-publisher
+          sudo mv mcp-publisher /usr/local/bin/
+
       - name: Publish to Registry
-        uses: modelcontextprotocol/publish-action@v1
-        with:
-          server-json: cli/server.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd cli
+          mcp-publisher login github-oidc
+          mcp-publisher publish
