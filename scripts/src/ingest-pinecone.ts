@@ -351,7 +351,21 @@ async function main() {
     totalUpserted += upserted;
   }
 
-  console.log(`\n=== Done! Total upserted: ${totalUpserted}, Skipped (already existed): ${totalSkipped} ===`);
+  console.log(`\n=== Ingestion Complete! Total upserted: ${totalUpserted}, Skipped (already existed): ${totalSkipped} ===`);
+
+  if (process.env.LLMMCP_API_URL && process.env.LLMMCP_API_SECRET) {
+    console.log("\n🔄 Triggering Worker model cache refresh...");
+    await triggerRefresh(
+      process.env.LLMMCP_API_URL,
+      process.env.LLMMCP_API_SECRET
+    );
+  } else {
+    console.log(
+      "\nℹ️ Skipping Worker refresh (LLMMCP_API_URL or LLMMCP_API_SECRET not set)"
+    );
+  }
+
+  console.log("\n✨ Done!");
 
   if (DEBUG_MODE) {
     console.log(`\n🐛 Debug files saved to: ${DEBUG_DIR}/`);
@@ -359,18 +373,7 @@ async function main() {
   }
 }
 
-/*
- * ── 4. Trigger Worker Refresh ───────────────────────
- * Tell the Worker to query Pinecone and cache the latest model lists.
- */
-if (process.env.LLMMCP_API_URL && process.env.LLMMCP_API_SECRET) {
-  console.log("\nTriggering Worker cache refresh...");
-  await triggerRefresh(process.env.LLMMCP_API_URL, process.env.LLMMCP_API_SECRET);
-} else {
-  console.log("\nSkipping Worker refresh (LLMMCP_API_URL or LLMMCP_API_SECRET not set)");
-}
 
-console.log("\nDone!");
 
 
 async function deleteAll() {

@@ -21,7 +21,7 @@ const cache = new LRUCache<DocResult[]>(CACHE_MAX);
 
 const server = new McpServer({
   name: "llmmcp",
-  version: "0.2.0",
+  version: "1.1.0",
 });
 
 // ── Tool: search_docs ──────────────────────────────────
