@@ -1,5 +1,8 @@
 # llmmcp
 
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-1.1-blue)](https://registry.modelcontextprotocol.io/?q=llmmcp)
+[**Website**](https://llmmcp.vercel.app)
+
 **Stop LLM hallucinations and outdated code patterns.**
 
 `llmmcp` is a Model Context Protocol (MCP) server that provides real-time, up-to-date documentation for major LLM providers (OpenAI, Anthropic, and Google Gemini). It ensures your AI agents—like Cursor, Claude Desktop, or Windsurf—base their work on current official documentation instead of stale training data or deprecated library patterns.
