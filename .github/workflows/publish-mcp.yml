@@ -29,7 +29,9 @@ jobs:
         working-directory: ./cli
 
       - name: Validate server.json
-        run: npx ajv-cli validate -s https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json -d cli/server.json --strict=false
+        run: |
+          curl -o server.schema.json https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json
+          npx ajv-cli validate -s server.schema.json -d cli/server.json --strict=false
 
       - name: Install mcp-publisher
         run: |
