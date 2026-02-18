@@ -26,13 +26,17 @@ import {
 
 // ── Types ───────────────────────────────────────────────
 
+type ClientCategory = 'cursor' | 'ide' | 'agent';
+
 type Client = {
   id: string;
   name: string;
-  icon: string;
+  icon: string | any; // string for image path, component for lucide/emoji
   description: string;
-  filePath: string;
-  config: string;
+  category: ClientCategory;
+  filePath?: string;
+  config?: string; // JSON config for IDEs
+  prompt?: string; // System prompt for Agents/IDEs
   color: string;
   docsUrl: string;
 };
@@ -40,28 +44,13 @@ type Client = {
 // ── Data ────────────────────────────────────────────────
 
 const clients: Client[] = [
-  {
-    id: "antigravity",
-    name: "Antigravity",
-    icon: "🪐",
-    description: "Google's AI-powered IDE",
-    filePath: ".antigravity/mcp.json",
-    config: `{
-  "mcpServers": {
-    "llmmcp": {
-      "command": "npx",
-      "args": ["-y", "llmmcp@latest"]
-    }
-  }
-}`,
-    color: "#4285F4",
-    docsUrl: "https://antigravity.google/",
-  },
+  // Cursor (Top Level)
   {
     id: "cursor",
     name: "Cursor",
-    icon: "⌨️",
+    icon: "/logos/cursor.png",
     description: "AI-powered code editor",
+    category: "cursor",
     filePath: ".cursor/mcp.json",
     config: `{
   "mcpServers": {
@@ -74,28 +63,14 @@ const clients: Client[] = [
     color: "#00b4d8",
     docsUrl: "https://docs.cursor.com/context/model-context-protocol",
   },
-  {
-    id: "claude-desktop",
-    name: "Claude Desktop",
-    icon: "💬",
-    description: "Claude desktop app",
-    filePath: "claude_desktop_config.json",
-    config: `{
-  "mcpServers": {
-    "llmmcp": {
-      "command": "npx",
-      "args": ["-y", "llmmcp@latest"]
-    }
-  }
-}`,
-    color: "#c2410c",
-    docsUrl: "https://modelcontextprotocol.io/quickstart/user",
-  },
+  
+  // AI IDEs
   {
     id: "windsurf",
     name: "Windsurf",
-    icon: "🏄",
+    icon: "",
     description: "Codeium's AI IDE",
+    category: "ide",
     filePath: "~/.codeium/windsurf/mcp_config.json",
     config: `{
   "mcpServers": {
@@ -105,25 +80,80 @@ const clients: Client[] = [
     }
   }
 }`,
+    prompt: `Configure the "llmmcp" MCP server by adding the following to your MCP settings file (~/.codeium/windsurf/mcp_config.json):
+
+{
+  "mcpServers": {
+    "llmmcp": {
+      "command": "npx",
+      "args": ["-y", "llmmcp@latest"]
+    }
+  }
+}
+
+Once configured, use the "llmmcp" tool to search for real-time API documentation before generating any code.`,
     color: "#06d6a0",
     docsUrl: "https://docs.codeium.com/windsurf/mcp",
   },
   {
-    id: "vscode",
-    name: "VS Code",
-    icon: "💎",
-    description: "GitHub Copilot Agent Mode",
-    filePath: ".vscode/mcp.json",
+    id: "antigravity",
+    name: "Antigravity",
+    icon: "",
+    description: "Google's AI-powered IDE",
+    category: "ide",
+    filePath: ".antigravity/mcp.json",
     config: `{
-  "servers": {
+  "mcpServers": {
     "llmmcp": {
       "command": "npx",
       "args": ["-y", "llmmcp@latest"]
     }
   }
 }`,
-    color: "#007acc",
-    docsUrl: "https://code.visualstudio.com/docs/copilot/chat/mcp-servers",
+    prompt: `Configure the "llmmcp" MCP server by adding the following to your MCP settings file (.antigravity/mcp.json):
+
+{
+  "mcpServers": {
+    "llmmcp": {
+      "command": "npx",
+      "args": ["-y", "llmmcp@latest"]
+    }
+  }
+}
+
+Once configured, use the "llmmcp" tool to search for real-time API documentation before generating any code.`,
+    color: "#4285F4",
+    docsUrl: "https://antigravity.google/",
+  },
+
+  // Coding Agents
+  {
+    id: "claude-code",
+    name: "Claude Code",
+    icon: "💬",
+    description: "Anthropic's CLI Agent",
+    category: "agent",
+    prompt: `Configure the "llmmcp" MCP server by running this command in your terminal:
+
+npx -y llmmcp@latest
+
+Once installed and running, always use the "llmmcp" tool to verify library methods and parameters before writing code. This ensures you reference correct and up-to-date documentation.`,
+    color: "#c2410c",
+    docsUrl: "https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview",
+  },
+  {
+    id: "openai-agent",
+    name: "OpenAI Agent",
+    icon: "🤖",
+    description: "OpenAI Custom GPT / Agent",
+    category: "agent",
+    prompt: `Configure the "llmmcp" MCP server by providing this setup command to the environment (or running it locally):
+
+npx -y llmmcp@latest
+
+Once configured, verify library methods and parameters using the "llmmcp" tool before writing code. This avoids hallucinations by referencing real-time documentation.`,
+    color: "#10a37f",
+    docsUrl: "https://platform.openai.com/docs/assistants/tools/function-calling",
   },
 ];
 
@@ -136,16 +166,13 @@ function RandomBubbles() {
 
   const getPeripheralPos = () => {
     // Avoid center 60% of vertical and horizontal space
-    // Safe zones: top 20%, bottom 20%, left 20%, right 20%
     const isHorizontalEdge = Math.random() > 0.5;
     let top, left;
 
     if (isHorizontalEdge) {
-      // Near top or bottom edge (can be anywhere horizontally)
       top = Math.random() > 0.5 ? `${5 + Math.random() * 15}%` : `${80 + Math.random() * 10}%`;
       left = `${5 + Math.random() * 90}%`;
     } else {
-      // Near left or right edge (can be anywhere vertically)
       left = Math.random() > 0.5 ? `${5 + Math.random() * 15}%` : `${80 + Math.random() * 10}%`;
       top = `${5 + Math.random() * 90}%`;
     }
@@ -153,30 +180,25 @@ function RandomBubbles() {
   };
 
   useEffect(() => {
-    // Initial bubbles with staggered entry
-    const initial = [0, 1].map((_, i) => {
-      const pos = getPeripheralPos();
-      return {
-        id: Math.random() + i,
-        iconIndex: Math.floor(Math.random() * bubbleIcons.length),
-        ...pos,
-      };
-    });
+    const initial = [0, 1].map((_, i) => ({
+      id: Math.random() + i,
+      iconIndex: Math.floor(Math.random() * bubbleIcons.length),
+      ...getPeripheralPos(),
+    }));
     setBubbles(initial);
 
     const interval = setInterval(() => {
       setBubbles(prev => {
-        const pos = getPeripheralPos();
         const next = [...prev];
         next.shift();
         next.push({
           id: Math.random(),
           iconIndex: Math.floor(Math.random() * bubbleIcons.length),
-          ...pos,
+          ...getPeripheralPos(),
         });
         return next;
       });
-    }, 3000); // Faster cycle: 3s
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
@@ -205,25 +227,30 @@ function RandomBubbles() {
   );
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
   };
 
   return (
     <button
       onClick={handleCopy}
-      className={`absolute top-3 right-3 p-2 rounded-lg transition-all duration-200 border ${
+      className={`absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 border text-xs font-mono font-bold uppercase tracking-wider shadow-lg ${
         copied 
-          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400" 
-          : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+          ? "bg-emerald-500 text-black border-emerald-400 scale-105" 
+          : "bg-white/10 border-white/10 text-white/70 hover:bg-white/20 hover:text-white hover:border-white/30"
       }`}
     >
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      <span>{copied ? "Copied!" : label}</span>
     </button>
   );
 }
@@ -231,8 +258,25 @@ function CopyButton({ text }: { text: string }) {
 // ── Main Page ───────────────────────────────────────────
 
 export default function Home() {
-  const [activeClient, setActiveClient] = useState("antigravity");
-  const active = clients.find((c) => c.id === activeClient) ?? clients[0];
+  const [activeCategory, setActiveCategory] = useState<ClientCategory>("cursor");
+  const [subSelection, setSubSelection] = useState<string | null>(null);
+
+  // Get clients for current category
+  const categoryClients = clients.filter(c => c.category === activeCategory);
+  
+  // Determine active client:
+  // For 'cursor', it's the only one.
+  // For others, it's the subSelection or the first one in the category.
+  const activeClient = activeCategory === 'cursor' 
+    ? categoryClients[0] 
+    : (clients.find(c => c.id === subSelection) || categoryClients[0]);
+
+  // Update sub-selection when category changes
+  useEffect(() => {
+    if (activeCategory !== 'cursor' && categoryClients.length > 0) {
+      setSubSelection(categoryClients[0].id);
+    }
+  }, [activeCategory]);
 
   return (
     <main className="min-h-screen relative selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
@@ -258,27 +302,26 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-4xl space-y-8 relative z-10"
+          className="max-w-6xl space-y-8 relative z-10"
         >
           {/* Pill Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-[10px] font-semibold text-blue-400 tracking-wide uppercase">
-            <span className="relative flex h-2 w-2">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass border border-white/10 text-base font-extrabold text-blue-400 tracking-wider uppercase shadow-lg shadow-blue-500/10">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
             </span>
-            Real-Time API Docs Fix
+            LLMMCP
           </div>
 
           <h1 className="text-4xl md:text-7xl font-bold tracking-tighter leading-[1.1] py-2">
-            Stop LLM<br />
+            Real-time API Docs<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500 drop-shadow-sm">
-              Hallucinations
+              Retrieval
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-sm md:text-lg text-text-muted leading-relaxed font-light">
-            Providing real-time documentation retrieval for OpenAI, Anthropic, and Gemini.<br />
-            Ensure technical accuracy through verified API reference synchronization.
+          <p className="max-w-full mx-auto text-sm md:text-lg text-text-muted leading-relaxed font-light md:whitespace-nowrap">
+            Open source project building the standard for real-time AI documentation retrieval.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -286,7 +329,7 @@ export default function Home() {
               href="#install"
               className="group h-12 px-8 flex items-center justify-center gap-2 bg-white text-black font-bold rounded-full hover:bg-white/90 transition-all hover:scale-[1.05] active:scale-95 shadow-xl"
             >
-              Start Building
+              Add MCP
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
@@ -304,15 +347,23 @@ export default function Home() {
         <RandomBubbles />
 
         {/* Scroll Indicator */}
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/20"
-        >
-          <div className="w-6 h-10 border-2 border-white/10 rounded-full flex justify-center p-1">
-            <div className="w-1 h-2 bg-white/40 rounded-full" />
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <div className="w-[30px] h-[50px] rounded-full border-2 border-white/20 flex justify-center p-2 opacity-60">
+            <motion.div
+              animate={{
+                y: [0, 24, 0],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                repeatType: "loop",
+                ease: "easeInOut"
+              }}
+              className="w-1.5 h-1.5 rounded-full bg-white mb-1"
+            />
           </div>
-        </motion.div>
+          <span className="text-[10px] uppercase tracking-widest text-white/30 font-semibold">Scroll</span>
+        </div>
       </section>
 
       {/* ── Install Guide ────────────────────────────── */}
@@ -325,77 +376,224 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-[1fr_1.5fr] gap-8">
-            {/* Sidebar Selectors */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              {clients.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveClient(c.id)}
-                  className={`flex items-center gap-4 p-5 rounded-3xl border transition-all duration-300 text-left group ${
-                    activeClient === c.id 
-                      ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
-                      : "glass border-white/5 hover:border-white/20"
-                  }`}
-                >
-                  <span className={`text-4xl transition-all ${activeClient === c.id ? "scale-110" : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100"}`}>
-                    {c.icon}
-                  </span>
-                  <div>
-                    <h4 className={`font-bold text-lg transition-colors ${activeClient === c.id ? "text-blue-400" : "text-white"}`}>{c.name}</h4>
-                    <p className="text-xs text-text-muted font-light">{c.description}</p>
-                  </div>
-                  {activeClient === c.id && (
-                    <motion.div layoutId="active-arrow">
-                      <ChevronRight className="w-5 h-5 ml-auto text-blue-400" />
-                    </motion.div>
-                  )}
-                </button>
-              ))}
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-8">
+            {/* Sidebar Selectors (Categories) */}
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 h-fit">
+              {/* Cursor Option */}
+              <button
+                onClick={() => setActiveCategory('cursor')}
+                className={`flex items-center gap-4 p-5 rounded-3xl border transition-all duration-300 text-left group ${
+                  activeCategory === 'cursor'
+                    ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
+                    : "glass border-white/5 hover:border-white/20"
+                }`}
+              >
+                <div className="w-12 h-12 flex items-center justify-center bg-black/40 rounded-xl overflow-hidden">
+                  <img src="/logos/cursor.png" alt="Cursor" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className={`font-bold text-lg transition-colors ${activeCategory === 'cursor' ? "text-blue-400" : "text-white"}`}>Cursor</h4>
+                  <p className="text-xs text-text-muted font-light">Direct Deep Link</p>
+                </div>
+                {activeCategory === 'cursor' && (
+                  <motion.div layoutId="active-arrow">
+                    <ChevronRight className="w-5 h-5 ml-auto text-blue-400" />
+                  </motion.div>
+                )}
+              </button>
+
+              {/* AI IDEs Option */}
+              <button
+                onClick={() => setActiveCategory('ide')}
+                className={`flex items-center gap-4 p-5 rounded-3xl border transition-all duration-300 text-left group ${
+                  activeCategory === 'ide'
+                    ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
+                    : "glass border-white/5 hover:border-white/20"
+                }`}
+              >
+                <div className="w-12 h-12 flex items-center justify-center bg-black/40 rounded-xl text-3xl">
+                  💻
+                </div>
+                <div>
+                  <h4 className={`font-bold text-lg transition-colors ${activeCategory === 'ide' ? "text-blue-400" : "text-white"}`}>AI IDEs</h4>
+                  <p className="text-xs text-text-muted font-light">Windsurf, Antigravity</p>
+                </div>
+                {activeCategory === 'ide' && (
+                  <motion.div layoutId="active-arrow">
+                    <ChevronRight className="w-5 h-5 ml-auto text-blue-400" />
+                  </motion.div>
+                )}
+              </button>
+
+              {/* Coding Agents Option */}
+              <button
+                onClick={() => setActiveCategory('agent')}
+                className={`flex items-center gap-4 p-5 rounded-3xl border transition-all duration-300 text-left group ${
+                  activeCategory === 'agent'
+                    ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
+                    : "glass border-white/5 hover:border-white/20"
+                }`}
+              >
+                <div className="w-12 h-12 flex items-center justify-center bg-black/40 rounded-xl text-3xl">
+                  🤖
+                </div>
+                <div>
+                  <h4 className={`font-bold text-lg transition-colors ${activeCategory === 'agent' ? "text-blue-400" : "text-white"}`}>Coding Agents</h4>
+                  <p className="text-xs text-text-muted font-light">Claude Code, OpenAI</p>
+                </div>
+                {activeCategory === 'agent' && (
+                  <motion.div layoutId="active-arrow">
+                    <ChevronRight className="w-5 h-5 ml-auto text-blue-400" />
+                  </motion.div>
+                )}
+              </button>
             </div>
 
             {/* Config View */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="glass-card rounded-[3rem] overflow-hidden flex flex-col border border-white/10 shadow-2xl"
-              >
-                <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 glass rounded-2xl flex items-center justify-center text-3xl shadow-inner">
-                      {active.icon}
+            <div className="flex flex-col gap-6">
+              {/* Sub-selection Tabs (only for IDEs and Agents) */}
+              {activeCategory !== 'cursor' && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {categoryClients.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSubSelection(c.id)}
+                      className={`px-6 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap border ${
+                        activeClient.id === c.id
+                          ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                          : "glass border-white/10 text-white/60 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeClient?.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="glass-card rounded-[3rem] overflow-hidden flex flex-col border border-white/10 shadow-2xl h-full"
+                >
+                  <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 glass rounded-2xl flex items-center justify-center text-3xl shadow-inner overflow-hidden relative">
+                         {activeClient.id === 'cursor' ? (
+                           <img src={activeClient.icon} className="w-full h-full object-cover" />
+                         ) : (
+                           // Default icon if none provided or for agents
+                           activeClient.icon || <Code2 className="w-8 h-8 opacity-50" />
+                         )}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl">{activeClient.name} Config</h3>
+                        {activeClient.filePath && (
+                          <p className="text-xs text-text-muted font-mono bg-white/5 px-2 py-1 rounded inline-block mt-1">{activeClient.filePath}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl">{active.name} Config</h3>
-                      <p className="text-xs text-text-muted font-mono bg-white/5 px-2 py-1 rounded inline-block mt-1">{active.filePath}</p>
-                    </div>
+                    <a 
+                      href={activeClient.docsUrl} 
+                      target="_blank" 
+                      className="p-3 glass border border-white/10 rounded-2xl hover:text-blue-400 transition-all hover:scale-110 shadow-lg"
+                    >
+                      <ExternalLink className="w-6 h-6" />
+                    </a>
                   </div>
-                  <a 
-                    href={active.docsUrl} 
-                    target="_blank" 
-                    className="p-3 glass border border-white/10 rounded-2xl hover:text-blue-400 transition-all hover:scale-110 shadow-lg"
-                  >
-                    <ExternalLink className="w-6 h-6" />
-                  </a>
-                </div>
 
-                <div className="relative flex-1 bg-black/60">
-                  <CopyButton text={active.config} />
-                  <pre className="p-10 overflow-x-auto text-base leading-relaxed font-mono">
-                    <code className="text-blue-300/90">{active.config}</code>
-                  </pre>
-                </div>
+                  <div className="relative flex-1 bg-black/60 flex flex-col">
+                    
+                    {/* ── Direct Connect Buttons (Cursor Only) ── */}
+                    {(activeClient.id === 'cursor' || activeClient.id === 'antigravity') && activeClient.config && (
+                      <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between gap-4">
+                        {activeClient.id === 'cursor' && (() => {
+                          try {
+                            const configObj = JSON.parse(activeClient.config!);
+                            const serverConfig = configObj.mcpServers?.llmmcp || configObj.mcpServers?.["io.github.zero-abd/llmmcp"];
+                            if (serverConfig) {
+                              const encoded = typeof window !== 'undefined' ? btoa(JSON.stringify(serverConfig)) : '';
+                              const deepLink = `cursor://anysphere.cursor-deeplink/mcp/install?name=llmmcp&config=${encoded}`;
+                              return (
+                                <a 
+                                  href={deepLink}
+                                  className="flex-1 flex items-center justify-center gap-3 px-4 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-blue-500/20 group"
+                                >
+                                  <Zap className="w-4 h-4 fill-current" />
+                                  <span>Add to Cursor Directly</span>
+                                </a>
+                              );
+                            }
+                          } catch (e) { return null; }
+                        })()}
 
-                <div className="p-5 bg-white/5 text-[11px] uppercase font-bold tracking-[0.3em] text-center text-blue-400/60 flex items-center justify-center gap-2">
-                  <Terminal className="w-4 h-4" />
-                  Paste into {active.filePath} &amp; restart
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                        {activeClient.id === 'antigravity' && (
+                           <button 
+                             disabled
+                             className="flex-1 flex items-center justify-center gap-3 px-4 py-3 bg-white/10 text-white/40 font-bold rounded-xl cursor-not-allowed border border-white/5"
+                             title="Automated install coming soon"
+                           >
+                             <Zap className="w-4 h-4" />
+                             <span>Add to Antigravity (Coming Soon)</span>
+                           </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── JSON Config Section ── */}
+                    {activeClient.config && (
+                      <div className="relative border-b border-white/5">
+                        <div className="absolute top-0 left-0 z-10 p-2">
+                           <span className="text-[10px] uppercase font-bold text-white/20 bg-black/40 px-2 py-1 rounded backdrop-blur-md">Config JSON</span>
+                        </div>
+                        <CopyButton text={activeClient.config} label="Copy JSON" />
+                        <pre className="p-8 pt-12 overflow-x-auto text-sm leading-relaxed font-mono">
+                          <code className="text-blue-300/90">{activeClient.config}</code>
+                        </pre>
+                      </div>
+                    )}
+
+                    {/* ── Agent Prompt Section ── */}
+                    {(activeClient.prompt || activeClient.category === 'ide') && (
+                       <div className="relative flex-1 bg-white/[0.02]">
+                          <div className="absolute top-0 left-0 z-10 p-2">
+                             <span className="text-[10px] uppercase font-bold text-emerald-500/40 bg-black/40 px-2 py-1 rounded backdrop-blur-md">Agent Prompt</span>
+                          </div>
+                          
+                          {activeClient.prompt ? (
+                             <>
+                                <CopyButton text={activeClient.prompt} label="Copy Prompt" />
+                                <div className="p-8 pt-12 font-mono text-sm text-emerald-200/80 leading-relaxed whitespace-pre-wrap">
+                                   {activeClient.prompt}
+                                </div>
+                             </>
+                          ) : (
+                             // Fallback prompt
+                             <>
+                                <CopyButton text={`Config command: npx -y llmmcp@latest`} label="Copy Prompt" />
+                                <div className="p-8 pt-12 font-mono text-sm text-emerald-200/80 leading-relaxed">
+                                   // Please configure llmmcp using: npx -y llmmcp@latest
+                                </div>
+                             </>
+                          )}
+                       </div>
+                    )}
+
+                  </div>
+
+                  <div className="p-4 bg-white/5 text-[10px] uppercase font-bold tracking-[0.2em] text-center text-white/30 flex flex-col gap-1">
+                    {activeClient.category === 'agent' ? (
+                       <span>Copy the prompt above & paste into your agent chat</span>
+                    ) : (
+                       <span>Paste JSON into {activeClient.filePath} &bull; Copy Prompt for best results</span>
+                    )}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </section>

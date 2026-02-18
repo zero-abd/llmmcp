@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { LRUCache } from "./cache.js";
-import { queryDocs, fetchProviders, type DocResult } from "./client.js";
+import { queryDocs, type DocResult } from "./client.js";
 
 // ── Config ─────────────────────────────────────────────
 
@@ -80,63 +80,57 @@ server.tool(
   }
 );
 
-// ── Tool: list_providers ───────────────────────────────
+// ── Tool: list_llms ────────────────────────────────────
 
 server.tool(
-  "list_providers",
-  "List available LLM documentation providers and their latest known model versions. Data is fetched dynamically from indexed documentation — no hardcoded model names.",
+  "list_llms",
+  "List available LLM documentation providers and their latest known model versions. Contains data for OpenAI, Anthropic, and Google Gemini.",
   {},
   async () => {
+    // Hardcoded latest model data for OpenAI and Anthropic
+    const staticSections = [
+      "### OpenAI Models",
+      "- **o3-mini** (2025-01-31): High intelligence, cost-effective reasoning model.",
+      "- **o1** (2024-12-17): Reasoning model for complex tasks.",
+      "- **GPT-4o** (2024-11-20): High-intelligence flagship model.",
+      
+      "### Anthropic Models",
+      "- **Claude 3.7 Sonnet** (2025-10): Intelligent, fast, and cost-effective.",
+      "- **Claude 3.5 Haiku** (2024-11): Fastest and most cost-effective model.",
+      "- **Claude 3.5 Sonnet** (2024-10): Balance of intelligence and speed.",
+    ];
+
+    let geminiSection = "### Google Gemini Models\n\n_Failed to fetch latest models._";
+
     try {
-      const providers = await fetchProviders(API_URL);
-
-      // providers is now a simple map: { openai: "...", anthropic: "..." }
-      // We'll format it as a markdown list of sections.
-
-      if (Object.keys(providers).length === 0) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: "No providers found. The service may be initializing.",
-            },
-          ],
-        };
+      const response = await fetch("https://ai.google.dev/gemini-api/docs/models.md.txt");
+      if (response.ok) {
+        const text = await response.text();
+        // Extract content up to "## Previous Gemini models"
+        const splitText = text.split("## Previous Gemini models")[0];
+        if (splitText) {
+          geminiSection = `### Google Gemini Models (Fetched dynamically)\n\n${splitText.trim()}`;
+        }
       }
-
-      const sections = Object.entries(providers)
-        .map(([provider, content]) => {
-          const name = provider.charAt(0).toUpperCase() + provider.slice(1);
-          return `### ${name} Models\n\n${content}\n`;
-        })
-        .join("\n---\n\n");
-
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: sections || "No models data available.",
-          },
-        ],
-      };
-    } catch (err) {
-      // Graceful fallback — still list providers without model details
-      const message =
-        err instanceof Error ? err.message : "Unknown error";
-
-      const fallback = [
-        "### OpenAI (`openai`)",
-        "### Anthropic (`claude`)",
-        "### Google Gemini (`gemini`)",
-        "",
-        `_Could not fetch dynamic model data: ${message}_`,
-        "_Use `search_docs` with a provider filter to find the latest models._",
-      ].join("\n");
-
-      return {
-        content: [{ type: "text" as const, text: fallback }],
-      };
+    } catch (error) {
+      console.error("Failed to fetch Gemini models:", error);
     }
+
+    const allSections = [
+      ...staticSections,
+      geminiSection,
+      "---",
+      "**Disclaimer**: This tool currently only supports OpenAI, Anthropic, and Google Gemini.",
+    ].join("\n\n");
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: allSections,
+        },
+      ],
+    };
   }
 );
 
