@@ -515,7 +515,7 @@ export default function Home() {
                             const configObj = JSON.parse(activeClient.config!);
                             const serverConfig = configObj.mcpServers?.llmmcp || configObj.mcpServers?.["io.github.zero-abd/llmmcp"];
                             if (serverConfig) {
-                              const encoded = typeof window !== 'undefined' ? btoa(JSON.stringify(serverConfig)) : '';
+                              const encoded = encodeURIComponent(btoa(JSON.stringify(serverConfig)));
                               const deepLink = `cursor://anysphere.cursor-deeplink/mcp/install?name=llmmcp&config=${encoded}`;
                               return (
                                 <a 
