@@ -1,7 +1,10 @@
 # llmmcp
 
-[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-1.2.0-blue)](https://registry.modelcontextprotocol.io/?q=llmmcp)<br>
-🌐 **Website:** https://llmmcp.vercel.app
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-1.2.0-blue)](https://registry.modelcontextprotocol.io/?q=llmmcp)
+<br>
+
+🌐 **Website:** https://llmmcp.vercel.app<br>
+🌐 **Demo:** https://techtakes.vercel.app/
 
 **Stop LLM hallucinations and outdated code patterns.**
 
