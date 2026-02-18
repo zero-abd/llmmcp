@@ -1,6 +1,6 @@
 {
   "name": "llmmcp",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "MCP server for real-time LLM API documentation — stop hallucinations",
   "keywords": ["mcp", "mcp-server", "llm", "documentation", "ai", "claude", "gemini", "openai", "hallucination-fix"],
   "mcpName": "llmmcp",
