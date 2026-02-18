@@ -4,7 +4,10 @@
 <br>
 
 🌐 **Website:** https://llmmcp.vercel.app<br>
-🌐 **Demo:** https://techtakes.vercel.app/
+🎥 **Demo:** 
+
+https://github.com/user-attachments/assets/eaad8d05-b7a8-4bf0-86c6-4fe2726da628
+
 
 **Stop LLM hallucinations and outdated code patterns.**
 
